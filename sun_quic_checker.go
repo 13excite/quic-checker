@@ -64,7 +64,7 @@ func checkResponseData(sunResponse *HTTPResp, chatNotifyString *string, verbose 
 		*chatNotifyString += fmt.Sprintf("HTTP/3 check failed %s: %v\n", sunResponse.URL, sunResponse.Err)
 
 		return
-	} // if err checker
+	} // if err sunResponse
 
 	// if err is nil, then check status code
 	if sunResponse.Resp.Status != config.ExpectedStatusCode {
@@ -133,8 +133,8 @@ func checkQuicSun(urlsArr []string) []*HTTPResp {
 
 	runtime.GOMAXPROCS(0)
 	workerInput := make(chan string, 3)
-	// need big buffer size, because we need to save data
-	// before the main tread LOOP will start
+	// need big buffer size(when we are using 100+ urls in the config),
+	// because we need to save data before the main tread LOOP will start
 	resultWorker := make(chan *HTTPResp, 500)
 	// run worker async
 	for i := 0; i < config.GoroutinesCount; i++ {
@@ -153,8 +153,6 @@ LOOP:
 			if len(responses) == len(urlsArr) {
 				break LOOP
 			} // end if
-		default:
-			log.Print("Nothing get from resultWorker chan")
 		} // end select
 	} // end for
 	defer close(workerInput)
