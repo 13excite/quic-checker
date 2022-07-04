@@ -49,39 +49,39 @@ func getHostFromURL(url string) string {
 	return rp.FindStringSubmatch(url)[1]
 }
 
-func checkResponseData(sunResponse *HTTPResp, chatNotifyString *string, verbose bool) {
+func checkResponseData(responce *HTTPResp, chatNotifyString *string, verbose bool) {
 	if verbose {
-		log.Print(colorGreen, sunResponse.URL, " ", sunResponse.Resp.Status)
+		log.Print(colorGreen, responce.URL, " ", responce.Resp.Status)
 	}
 	// if requests failed
-	if sunResponse.Err != nil {
+	if responce.Err != nil {
 
 		if verbose {
 			log.Print(colorRed, "Monitoring request error", colorReset)
-			log.Print(colorRed, "HTTP/3 check error on url: "+getHostFromURL(sunResponse.URL), sunResponse.Err, colorReset)
+			log.Print(colorRed, "HTTP/3 check error on url: "+getHostFromURL(responce.URL), responce.Err, colorReset)
 		}
 
-		*chatNotifyString += fmt.Sprintf("HTTP/3 check failed %s: %v\n", sunResponse.URL, sunResponse.Err)
+		*chatNotifyString += fmt.Sprintf("HTTP/3 check failed %s: %v\n", responce.URL, responce.Err)
 
 		return
-	} // if err sunResponse
+	} // if err responce
 
 	// if err is nil, then check status code
-	if sunResponse.Resp.Status != config.ExpectedStatusCode {
+	if responce.Resp.Status != config.ExpectedStatusCode {
 
 		if verbose {
 			log.Print(colorRed, "Monitoring status code", colorReset)
-			errString := fmt.Sprintf("HTTP/3 invalid response code: %s  URL:%s\n", sunResponse.Resp.Status, sunResponse.URL)
+			errString := fmt.Sprintf("HTTP/3 invalid response code: %s  URL:%s\n", responce.Resp.Status, responce.URL)
 			log.Print(colorRed, errString, colorReset)
 		}
 
-		*chatNotifyString += fmt.Sprintf("HTTP/3 invalid response code %s  %s\n", sunResponse.Resp.Status, sunResponse.URL)
+		*chatNotifyString += fmt.Sprintf("HTTP/3 invalid response code %s  %s\n", responce.Resp.Status, responce.URL)
 		return
 	} // if status code checker
 
 }
 
-// httpCheckWorker is worker process. Need to run from checkQuicSun function
+// httpCheckWorker is worker process. Need to run from checkQuicHosts function
 func httpCheckWorker(in <-chan string, resultStatus chan<- *HTTPResp, quicConf quic.Config) {
 	roundTripper := &http3.RoundTripper{
 		QuicConfig: &quicConf,
@@ -119,8 +119,8 @@ func httpCheckWorker(in <-chan string, resultStatus chan<- *HTTPResp, quicConf q
 	}
 }
 
-// checkQuicSun is a main checker logic
-func checkQuicSun(urlsArr []string) []*HTTPResp {
+// checkQuicHosts is a main checker logic
+func checkQuicHosts(urlsArr []string) []*HTTPResp {
 	var qconf quic.Config
 	var quicVer []quic.VersionNumber
 	var responses []*HTTPResp
@@ -171,10 +171,10 @@ func init() {
 
 func main() {
 
-	sunResponces := checkQuicSun(config.Urls)
+	responces := checkQuicHosts(config.Urls)
 	var chatMsg string
 
-	for _, HTTPResponse := range sunResponces {
+	for _, HTTPResponse := range responces {
 		checkResponseData(HTTPResponse, &chatMsg, *debugMode)
 	}
 
