@@ -11,7 +11,6 @@ import (
 // DefultConfigPath is default path for app config from rpm package
 const DefultConfigPath = "/etc/test_quic_cfg.yaml"
 
-// Config structure described yaml structure from /etc/testsrv.yaml
 type Config struct {
 	Urls               []string `yaml:"urls"`
 	MonFile            string   `yaml:"mon_file"`
