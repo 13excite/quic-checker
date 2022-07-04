@@ -1,0 +1,10 @@
+---
+
+mon_file: './test_mon_file'
+goroutines: 3
+expected_status_code: '200 OK'
+urls:
+  - https://www.cloudflare.com/lang/en.json
+  - https://quic-api.vk.com/
+  - https://www.cloudflare.com/vendor/onetrust/scripttemplates/otSDKStub.js
+
