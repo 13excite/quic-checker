@@ -147,13 +147,11 @@ func checkQuicSun(urlsArr []string) []*HTTPResp {
 	}
 LOOP:
 	for {
-		select {
-		case r := <-resultWorker:
-			responses = append(responses, r)
-			if len(responses) == len(urlsArr) {
-				break LOOP
-			} // end if
-		} // end select
+		r := <-resultWorker
+		responses = append(responses, r)
+		if len(responses) == len(urlsArr) {
+			break LOOP
+		} // end if
 	} // end for
 	defer close(workerInput)
 	defer close(resultWorker)
