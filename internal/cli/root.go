@@ -9,7 +9,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "quic-checker",
-	Short: "A quick-check CLI for console operations",
+	Short: "A CLI tool to check QUIC support of a website",
 	Long:  ``,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// log.InitCLILogger()
