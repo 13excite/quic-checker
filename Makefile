@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
 # constant variables
-PROJECT_NAME	= dutybot
-BINARY_NAM	= dutybot
+PROJECT_NAME	= quic-checker
+BINARY_NAM	= quic-checker
 GIT_COMMIT	= $(shell git rev-parse HEAD)
 BINARY_TAR_DIR	= $(BINARY_NAME)-$(GIT_COMMIT)
 BINARY_TAR_FILE	= $(BINARY_TAR_DIR).tar.gz
@@ -13,7 +13,7 @@ BUILD_DATE	= $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
 SRC = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
-.PHONY: lint fmt
+.PHONY: lint fmt test
 
 fmt:
 	@gofmt -l -w $(SRC)
@@ -22,9 +22,10 @@ lint:
 	@echo 'running linter...'
 	@golangci-lint run ./...
 #
-# Build
+# Build: TODO
 #
-build:
-	@echo 'compiling binary...'
-	@GOARCH=amd64 GOOS=linux go build -ldflags "-X main.buildTimestamp=$(BUILD_DATE) -X main.gitHash=$(GIT_COMMIT) -X main.buildVersion=$(BUILD_VERSION)" -o ./$(BINARY_NAME)
-
+## test: run tests with coverage
+test:
+	@printf "$(OK_COLOR)==> Running tests$(NO_COLOR)\n"
+	@go test -v -count=1 -covermode=atomic -coverpkg=./... -coverprofile=coverage.txt ./...
+	@go tool cover -func coverage.txt
