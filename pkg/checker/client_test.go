@@ -2,8 +2,10 @@ package checker
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -103,8 +105,53 @@ func TestQuicClient_AnyError(t *testing.T) {
 	// Receive the site status from the channel
 	siteStatus := <-siteStatusChan
 
-	// Check the site status
+	// Check the site error message
 	require.Equal(t, "Get \"http://nonexistent\": dial tcp: lookup nonexistent: no such host", siteStatus.Err.Error())
+
+	// Check the site response status code
+	require.Equal(t, -1, siteStatus.StatusCode)
+}
+
+func TestQuicClient_GetTimeoutError(t *testing.T) {
+	// Create a channel for shutting down the mock server
+	// We need to send two shutdown signals to the channel to stop the server
+	// because Get method sends also retry request
+	shutdownServer := make(chan struct{}, 1)
+	// startBadTestHTTPServer starts a mock HTTP server that will not respond to requests
+	mockServer := func(shutdownServer chan struct{}) *httptest.Server {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Wait for a shutdown signal
+			<-shutdownServer
+			fmt.Fprint(w, "timeout expected")
+		}))
+		return ts
+	}(shutdownServer)
+	defer mockServer.Close()
+
+	// Create a QuicClient with a mock RoundTripper and a short timeout
+	h3RoundTripper := &http3.RoundTripper{}
+	client := NewClient(h3RoundTripper, 1)
+	client.httpClient = &http.Client{
+		Timeout: 1 * time.Second,
+	}
+
+	// Create a channel for receiving site status
+	siteStatusChan := make(chan *SiteStatus)
+
+	// Perform a GET request using the QuicClient
+	go client.Get(mockServer.URL, siteStatusChan)
+
+	// Receive the site status from the channel
+	siteStatus := <-siteStatusChan
+	// We need to send two shutdown signals to the channel to stop the server
+	// because Get method sends also retry request
+	shutdownServer <- struct{}{}
+	shutdownServer <- struct{}{}
+
+	// Check the error message
+	require.Equal(t, fmt.Sprintf(
+		"Get \"%s\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)", mockServer.URL),
+		siteStatus.Err.Error())
 
 	// Check the site response status code
 	require.Equal(t, -1, siteStatus.StatusCode)
