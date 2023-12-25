@@ -13,14 +13,19 @@ BUILD_DATE	= $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
 SRC = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
+# golangci-lint config
+golangci_lint_version=latest
+vols=-v `pwd`:/app -w /app
+run_lint=docker run --rm $(vols) golangci/golangci-lint:$(golangci_lint_version)
+
 .PHONY: lint fmt test
 
 fmt:
 	@gofmt -l -w $(SRC)
 
 lint:
-	@echo 'running linter...'
-	@golangci-lint run ./...
+	@printf "$(OK_COLOR)==> Running golang-ci-linter via Docker$(NO_COLOR)\n"
+	@$(run_lint) golangci-lint run --timeout=5m --verbose
 #
 # Build: TODO
 #
