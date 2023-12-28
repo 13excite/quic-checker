@@ -1,7 +1,11 @@
 package checker
 
 import (
+	"context"
 	"log"
+	"sync"
+
+	"github.com/13excite/quic-checker/pkg/config"
 )
 
 type SiteStatus struct {
@@ -11,11 +15,23 @@ type SiteStatus struct {
 }
 
 // TODO: add cli and prometheus output modes
-func siteStatusChecker(results <-chan *SiteStatus) {
-	for result := range results {
-		if result.Err != nil {
-			log.Print("HTTP/3 check error on url: ", result.URL, result.Err)
-			continue
+func ShellSiteStatusChecker(ctx context.Context, wg *sync.WaitGroup, results <-chan *SiteStatus, config *config.Config) {
+
+	for {
+		select {
+		case result := <-results:
+			if result.Err != nil {
+				log.Print("HTTP/3 check error on url: ", result.URL, result.Err)
+				wg.Done()
+				continue
+			}
+			if result.StatusCode != config.ExpectedStatusCode {
+				log.Print("HTTP/3 check error on url: ", result.URL, " expected status code: ", config.ExpectedStatusCode, " got: ", result.StatusCode)
+				wg.Done()
+				continue
+			}
+		case <-ctx.Done():
+			return
 		}
 	}
 }
