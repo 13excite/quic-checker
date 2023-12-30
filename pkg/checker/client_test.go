@@ -100,13 +100,13 @@ func TestQuicClient_AnyError(t *testing.T) {
 	// Create a channel for receiving site status
 	siteStatusChan := make(chan *SiteStatus)
 	// Perform a GET request to a non-existent server, causing a lookup error
-	go client.Get("http://nonexistent", siteStatusChan)
+	go client.Get("http://nonexistent.local", siteStatusChan)
 
 	// Receive the site status from the channel
 	siteStatus := <-siteStatusChan
 
 	// Check the site error message
-	require.Equal(t, "Get \"http://nonexistent\": dial tcp: lookup nonexistent: no such host", siteStatus.Err.Error())
+	require.Equal(t, "Get \"http://nonexistent.local\": dial tcp: lookup nonexistent.local: no such host", siteStatus.Err.Error())
 
 	// Check the site response status code
 	require.Equal(t, -1, siteStatus.StatusCode)
