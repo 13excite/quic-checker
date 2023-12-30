@@ -2,7 +2,10 @@
 package cli
 
 import (
+	"fmt"
 	"os"
+
+	"github.com/13excite/quic-checker/internal/cli/shell"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +18,10 @@ var rootCmd = &cobra.Command{
 		// log.InitCLILogger()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
+		if err := cmd.Usage(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
@@ -25,4 +31,8 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
+}
+
+func init() {
+	rootCmd.AddCommand(shell.NewShellCommand())
 }
