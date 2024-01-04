@@ -4,7 +4,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"runtime"
 	"time"
 
 	"github.com/quic-go/quic-go/http3"
@@ -23,7 +22,7 @@ func NewClient(h3RoundTripper *http3.RoundTripper, clientTimeout int) *QuicClien
 	}
 }
 
-func (c *QuicClient) Get(url string, siteStatus chan<- *SiteStatus) {
+func (c *QuicClient) Get(url string) (statusCode int, err error) {
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
 	res, err := c.httpClient.Do(req)
@@ -33,29 +32,20 @@ func (c *QuicClient) Get(url string, siteStatus chan<- *SiteStatus) {
 		netErr, isNetErr := err.(net.Error)
 		if isNetErr && netErr.Timeout() {
 			log.Printf("net.Error with a Timeout occured: %v\n", url)
-			res, err := c.httpClient.Do(req)
+			res, err = c.httpClient.Do(req)
 			// if it's still an error, then we need to return it
 			if err != nil {
-				siteStatus <- &SiteStatus{url, -1, err}
-				runtime.Gosched()
-				return
+				return -1, err
 			}
 			// if it's not an error, then we need to return the response status code
 			// close response body
 			defer res.Body.Close()
-			siteStatus <- &SiteStatus{url, res.StatusCode, err}
-			runtime.Gosched()
-			return
+			return res.StatusCode, err
 		}
-		// if it's not a timeout error, then we need to return this errorx
-		siteStatus <- &SiteStatus{url, -1, err}
-		runtime.Gosched()
-		return
-
+		// if it's not a timeout error, then we need to return this error
+		return -1, err
 	}
 	// close response body
 	defer res.Body.Close()
-
-	siteStatus <- &SiteStatus{url, res.StatusCode, err}
-	runtime.Gosched()
+	return res.StatusCode, err
 }
