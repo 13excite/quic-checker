@@ -2,39 +2,43 @@ package checker
 
 import (
 	"context"
-	"sync"
+
+	"github.com/quic-go/quic-go"
+)
+
+const (
+	dataQueueSize = 128
 )
 
 type WorkerPool struct {
 	workersCount int
-	jobs         chan Job
-	results      chan Result
-	Done         chan struct{}
+	queue        chan *Task
+	results      chan *SiteStatus
+	workers      []*Worker
 }
 
-type Job struct {
-}
-
-type Result struct {
-}
-
-func New(wcount int) WorkerPool {
-	return WorkerPool{
+func NewWorkerPool(ctx context.Context, wcount int, quicConf *quic.Config) WorkerPool {
+	p := WorkerPool{
+		workers:      make([]*Worker, wcount),
 		workersCount: wcount,
-		jobs:         make(chan Job, wcount),
-		results:      make(chan Result, wcount),
-		Done:         make(chan struct{}),
+		queue:        make(chan *Task, dataQueueSize),
+		results:      make(chan *SiteStatus, dataQueueSize),
 	}
+	for i := 0; i < p.workersCount; i++ {
+		p.workers[i] = NewWorker(ctx, quicConf, p.queue, p.results)
+	}
+
+	return p
 }
 
-func (wp *WorkerPool) Run(ctx context.Context) {
-	var wg sync.WaitGroup
-
-	for i := 0; i < wp.workersCount; i++ {
-		wg.Add(1)
-		go workerToDo(ctx, &wg, wp.jobs, wp.results)
+// AddTask adds a task to the pool queue
+func (p *WorkerPool) AddTask(task *Task) {
+	if task.WG != nil {
+		task.WG.Add(1)
 	}
+	p.queue <- task
 }
 
-func workerToDo(ctx context.Context, wg *sync.WaitGroup, jobs <-chan Job, results chan<- Result) {
+func (p WorkerPool) Results() <-chan *SiteStatus {
+	return p.results
 }

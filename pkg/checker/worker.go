@@ -10,13 +10,13 @@ import (
 
 var wrkseq = 1
 
-// Task type represents a worker task descriptor
+// Task type represents a Worker task descriptor
 type Task struct {
 	URL string
 	WG  *sync.WaitGroup
 }
 
-type H3Worker struct {
+type Worker struct {
 	id      int
 	ctx     context.Context
 	queue   chan *Task
@@ -24,30 +24,30 @@ type H3Worker struct {
 	client  *QuicClient
 }
 
-// NewWorker creates a new worker
-func NewWorker(ctx context.Context, quicConf *quic.Config, queue chan *Task, results chan *SiteStatus) {
-
-	roundTripper := &http3.RoundTripper{
-		QuicConfig: quicConf,
-	}
-
-	w := &H3Worker{
+// startWorker creates a new Worker
+// Move func as method and stipt to 2 parts: 1) create Worker 2) run Worker
+func NewWorker(ctx context.Context, quicConf *quic.Config, queue chan *Task, results chan *SiteStatus) *Worker {
+	w := &Worker{
+		ctx:     ctx,
 		id:      wrkseq,
 		queue:   queue,
 		results: results,
-		client:  NewClient(roundTripper, 3),
+		client: NewClient(&http3.RoundTripper{
+			QuicConfig: quicConf,
+		}, 3),
 	}
-
 	wrkseq++
 	go w.run()
+
+	return w
 }
 
-// ID is a worker id getter
-func (w *H3Worker) ID() int {
+// ID is a Worker id getter
+func (w *Worker) ID() int {
 	return w.id
 }
 
-func (w *H3Worker) run() {
+func (w *Worker) run() {
 	for {
 		select {
 		case task := <-w.queue:
