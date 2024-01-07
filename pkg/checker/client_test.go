@@ -77,18 +77,15 @@ func TestQuicClient_Get(t *testing.T) {
 			require.Equal(t, tc.expectedSiteURL, req.URL.String(), "Unexpected URL. Case: %s", tc.name)
 			return tc.response
 		})
-		// Create a channel for receiving site status
-		siteStatusChan := make(chan *SiteStatus)
 		// Perform a GET request using the QuicClient
-		go client.Get(tc.siteURL, siteStatusChan)
+		statusCode, err := client.Get(tc.siteURL)
 		// Receive the site status from the channel
-		siteStatus := <-siteStatusChan
 
 		// Check the site status
-		require.Equal(t, tc.expectedErr, siteStatus.Err, "Unexpected error. Case: %s", tc.name)
+		require.Equal(t, tc.expectedErr, err, "Unexpected error. Case: %s", tc.name)
 
 		// Check the site response status code
-		require.Equal(t, tc.expectedStatusCode, siteStatus.StatusCode, "Unexpected status code. Case: %s", tc.name)
+		require.Equal(t, tc.expectedStatusCode, statusCode, "Unexpected status code. Case: %s", tc.name)
 	}
 }
 
@@ -97,19 +94,15 @@ func TestQuicClient_AnyError(t *testing.T) {
 	h3RoundTripper := &http3.RoundTripper{}
 	client := NewClient(h3RoundTripper, 1)
 	client.httpClient = http.DefaultClient
-	// Create a channel for receiving site status
-	siteStatusChan := make(chan *SiteStatus)
-	// Perform a GET request to a non-existent server, causing a lookup error
-	go client.Get("http://127.0.0.1:19999", siteStatusChan)
 
-	// Receive the site status from the channel
-	siteStatus := <-siteStatusChan
+	// Perform a GET request to a non-existent server, causing a lookup error
+	statusCode, err := client.Get("http://127.0.0.1:19999")
 
 	// Check the site error message
-	require.Equal(t, "Get \"http://127.0.0.1:19999\": dial tcp 127.0.0.1:19999: connect: connection refused", siteStatus.Err.Error())
+	require.Equal(t, "Get \"http://127.0.0.1:19999\": dial tcp 127.0.0.1:19999: connect: connection refused", err.Error())
 
 	// Check the site response status code
-	require.Equal(t, -1, siteStatus.StatusCode)
+	require.Equal(t, -1, statusCode)
 }
 
 func TestQuicClient_GetTimeoutError(t *testing.T) {
@@ -135,14 +128,9 @@ func TestQuicClient_GetTimeoutError(t *testing.T) {
 		Timeout: 1 * time.Second,
 	}
 
-	// Create a channel for receiving site status
-	siteStatusChan := make(chan *SiteStatus)
-
 	// Perform a GET request using the QuicClient
-	go client.Get(mockServer.URL, siteStatusChan)
+	statusCode, err := client.Get(mockServer.URL)
 
-	// Receive the site status from the channel
-	siteStatus := <-siteStatusChan
 	// We need to send two shutdown signals to the channel to stop the server
 	// because Get method sends also retry request
 	shutdownServer <- struct{}{}
@@ -151,8 +139,8 @@ func TestQuicClient_GetTimeoutError(t *testing.T) {
 	// Check the error message
 	require.Equal(t, fmt.Sprintf(
 		"Get \"%s\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)", mockServer.URL),
-		siteStatus.Err.Error())
+		err.Error())
 
 	// Check the site response status code
-	require.Equal(t, -1, siteStatus.StatusCode)
+	require.Equal(t, -1, statusCode)
 }
