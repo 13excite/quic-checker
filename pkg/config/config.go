@@ -12,11 +12,20 @@ import (
 const DefultConfigPath = "/etc/quic-checker.yaml"
 
 type Config struct {
-	Urls []string `yaml:"urls"`
-	// MonFile            string   `yaml:"mon_file"`
-	GoroutinesCount    int `yaml:"goroutines"`
-	ExpectedStatusCode int `yaml:"expected_status_code"`
+	Urls               []string `yaml:"urls"`
+	GoroutinesCount    int      `yaml:"goroutines"`
+	ExpectedStatusCode int      `yaml:"expected_status_code"`
 }
+
+// type LoggerConfig struct {
+// 	Color             bool     `yaml:"log_color"`
+// 	DisableStacktrace bool     `yaml:"log_disable_stacktrace"`
+// 	DevMode           bool     `yaml:"log_dev_mode"`
+// 	DisableCaller     bool     `yaml:"log_disable_caller"`
+// 	Level             string   `yaml:"log_level"`
+// 	Encoding          string   `yaml:"log_encoding"`
+// 	ErrorOutputPaths  []string `yaml:"log_err_output_paths"`
+// }
 
 // GetConfig reading and parsing configuration yaml file
 func (conf *Config) GetConfig(configPath string) {
@@ -35,7 +44,26 @@ func (conf *Config) GetConfig(configPath string) {
 }
 
 func (conf *Config) Defaults() {
-	conf.GoroutinesCount = 1
+	conf.GoroutinesCount = 3
 	conf.ExpectedStatusCode = 200
-	conf.Urls = []string{"https://www.google.com"}
+	conf.Urls = []string{
+		"https://www.google.com",
+		"https://www.facebook.com",
+		"https://www.youtube.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+		"https://www.google.com",
+	}
 }
