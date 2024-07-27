@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/13excite/quic-checker/pkg/client"
+
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 )
@@ -16,12 +18,16 @@ type Task struct {
 	WG  *sync.WaitGroup
 }
 
+type QuicClient interface {
+	Get(url string) (statusCode int, err error)
+}
+
 type Worker struct {
 	id      int
 	ctx     context.Context
 	queue   chan *Task
 	results chan<- *SiteStatus
-	client  *QuicClient
+	client  QuicClient
 }
 
 // startWorker creates a new Worker
@@ -32,7 +38,7 @@ func NewWorker(ctx context.Context, quicConf *quic.Config, queue chan *Task, res
 		id:      wrkseq,
 		queue:   queue,
 		results: results,
-		client: NewClient(&http3.RoundTripper{
+		client: client.NewClient(&http3.RoundTripper{
 			QuicConfig: quicConf,
 		}, 3),
 	}
