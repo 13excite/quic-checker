@@ -36,7 +36,6 @@ func NewShellCommand() *cobra.Command {
 			for _, url := range conf.Urls {
 				// shoud waitgroup.add be here?
 				// wg.Add(1)
-				fmt.Println("WG ADD", url)
 				wp.AddTask(&checker.Task{
 					URL: url,
 					WG:  wg,
