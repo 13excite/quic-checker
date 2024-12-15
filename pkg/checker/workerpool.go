@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// dataQueueSize is the size of the queue for the worker pool
 	dataQueueSize = 128
 )
 
@@ -31,7 +32,7 @@ func NewWorkerPool(ctx context.Context, wcount int, quicConf *quic.Config) Worke
 	return p
 }
 
-// AddTask adds a task to the pool queue
+// AddTask adds a task to the pool queue and increments the WaitGroup counter
 func (p *WorkerPool) AddTask(task *Task) {
 	if task.WG != nil {
 		task.WG.Add(1)
@@ -39,6 +40,7 @@ func (p *WorkerPool) AddTask(task *Task) {
 	p.queue <- task
 }
 
+// Results returns a channel with the results channel
 func (p WorkerPool) Results() <-chan *SiteStatus {
 	return p.results
 }
