@@ -14,8 +14,9 @@ var wrkseq = 1
 
 // Task type represents a Worker task descriptor
 type Task struct {
-	URL string
-	WG  *sync.WaitGroup
+	URL                string
+	ExpectedStatusCode int
+	WG                 *sync.WaitGroup
 }
 
 type QuicClient interface {
@@ -60,17 +61,19 @@ func (w *Worker) run() {
 			statusCode, err := w.client.Get(task.URL)
 			if err != nil {
 				w.results <- &SiteStatus{
-					URL:        task.URL,
-					StatusCode: statusCode,
-					Err:        err,
+					URL:                task.URL,
+					StatusCode:         statusCode,
+					ExpectedStatusCode: task.ExpectedStatusCode,
+					Err:                err,
 				}
 				// next task
 				continue
 			}
 			w.results <- &SiteStatus{
-				URL:        task.URL,
-				StatusCode: statusCode,
-				Err:        nil,
+				URL:                task.URL,
+				StatusCode:         statusCode,
+				ExpectedStatusCode: task.ExpectedStatusCode,
+				Err:                nil,
 			}
 			// next task
 			continue

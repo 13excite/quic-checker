@@ -21,7 +21,6 @@ func NewShellCommand() *cobra.Command {
 		Run: func(_ *cobra.Command, _ []string) {
 			conf := &config.Config{}
 			conf.Defaults()
-			conf.ExpectedStatusCode = 400
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
@@ -33,8 +32,9 @@ func NewShellCommand() *cobra.Command {
 
 			for _, url := range conf.Urls {
 				wp.AddTask(&checker.Task{
-					URL: url,
-					WG:  wg,
+					URL:                url.URL,
+					ExpectedStatusCode: url.ExpectStatusCode,
+					WG:                 wg,
 				})
 			}
 			go checker.ShellSiteStatusChecker(ctx, wg, wp.Results(), conf)
