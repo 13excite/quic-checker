@@ -112,7 +112,7 @@ func TestQuicClient_GetTimeoutError(t *testing.T) {
 	shutdownServer := make(chan struct{}, 1)
 	// startBadTestHTTPServer starts a mock HTTP server that will not respond to requests
 	mockServer := func(shutdownServer chan struct{}) *httptest.Server {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			// Wait for a shutdown signal
 			<-shutdownServer
 			fmt.Fprint(w, "timeout expected")

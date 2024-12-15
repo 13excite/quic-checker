@@ -14,14 +14,16 @@ var wrkseq = 1
 
 // Task type represents a Worker task descriptor
 type Task struct {
-	URL string
-	WG  *sync.WaitGroup
+	URL                string
+	ExpectedStatusCode int
+	WG                 *sync.WaitGroup
 }
 
 type QuicClient interface {
 	Get(url string) (statusCode int, err error)
 }
 
+// Worker type represents a worker object
 type Worker struct {
 	id      int
 	ctx     context.Context
@@ -30,8 +32,7 @@ type Worker struct {
 	client  QuicClient
 }
 
-// startWorker creates a new Worker
-// Move func as method and stipt to 2 parts: 1) create Worker 2) run Worker
+// NewWorker creates a new Worker
 func NewWorker(ctx context.Context, quicConf *quic.Config, queue chan *Task, results chan *SiteStatus) *Worker {
 	w := &Worker{
 		ctx:     ctx,
@@ -60,23 +61,19 @@ func (w *Worker) run() {
 			statusCode, err := w.client.Get(task.URL)
 			if err != nil {
 				w.results <- &SiteStatus{
-					URL:        task.URL,
-					StatusCode: statusCode,
-					Err:        err,
-				}
-				if task.WG != nil {
-					task.WG.Done()
+					URL:                task.URL,
+					StatusCode:         statusCode,
+					ExpectedStatusCode: task.ExpectedStatusCode,
+					Err:                err,
 				}
 				// next task
 				continue
 			}
 			w.results <- &SiteStatus{
-				URL:        task.URL,
-				StatusCode: statusCode,
-				Err:        nil,
-			}
-			if task.WG != nil {
-				task.WG.Done()
+				URL:                task.URL,
+				StatusCode:         statusCode,
+				ExpectedStatusCode: task.ExpectedStatusCode,
+				Err:                nil,
 			}
 			// next task
 			continue
