@@ -64,9 +64,6 @@ func (w *Worker) run() {
 					StatusCode: statusCode,
 					Err:        err,
 				}
-				if task.WG != nil {
-					task.WG.Done()
-				}
 				// next task
 				continue
 			}
@@ -74,9 +71,6 @@ func (w *Worker) run() {
 				URL:        task.URL,
 				StatusCode: statusCode,
 				Err:        nil,
-			}
-			if task.WG != nil {
-				task.WG.Done()
 			}
 			// next task
 			continue

@@ -2,7 +2,6 @@ package shell
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -30,31 +29,16 @@ func NewShellCommand() *cobra.Command {
 			quicConf.MaxIdleTimeout = time.Second * 2
 
 			wg := &sync.WaitGroup{}
-
 			wp := checker.NewWorkerPool(ctx, conf.GoroutinesCount, quicConf)
 
 			for _, url := range conf.Urls {
-				// shoud waitgroup.add be here?
-				// wg.Add(1)
 				wp.AddTask(&checker.Task{
 					URL: url,
 					WG:  wg,
 				})
 			}
-
-			quitReader := make(chan struct{})
-			go func() {
-				for {
-					select {
-					case result := <-wp.Results():
-						fmt.Println(result.URL, result.StatusCode, result.Err)
-					case <-quitReader:
-						return
-					}
-				}
-			}()
+			go checker.ShellSiteStatusChecker(ctx, wg, wp.Results(), conf)
 			wg.Wait()
-			defer close(quitReader)
 		},
 	}
 	return sehllCmd

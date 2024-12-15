@@ -22,6 +22,7 @@ func ShellSiteStatusChecker(ctx context.Context, wg *sync.WaitGroup, results <-c
 		case result := <-results:
 			if result.Err != nil {
 				log.Print("HTTP/3 check error on url: ", result.URL, result.Err)
+
 				wg.Done()
 				continue
 			}
@@ -30,6 +31,8 @@ func ShellSiteStatusChecker(ctx context.Context, wg *sync.WaitGroup, results <-c
 				wg.Done()
 				continue
 			}
+			log.Print("HTTP/3 check success on url: ", result.URL, " status code: ", result.StatusCode)
+			wg.Done()
 		case <-ctx.Done():
 			return
 		}
