@@ -4,8 +4,6 @@ import (
 	"context"
 	"log"
 	"sync"
-
-	"github.com/13excite/quic-checker/pkg/config"
 )
 
 var (
@@ -22,7 +20,7 @@ type SiteStatus struct {
 }
 
 // TODO: add cli and prometheus output modes
-func ShellSiteStatusChecker(ctx context.Context, wg *sync.WaitGroup, results <-chan *SiteStatus, config *config.Config) {
+func ShellSiteStatusChecker(ctx context.Context, wg *sync.WaitGroup, results <-chan *SiteStatus) {
 
 	for {
 		select {

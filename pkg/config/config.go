@@ -13,12 +13,12 @@ const DefultConfigPath = "/etc/quic-checker.yaml"
 
 // Config type represents a main configuration object
 type Config struct {
-	Urls            []Url `yaml:"urls"`
+	Urls            []URL `yaml:"urls"`
 	GoroutinesCount int   `yaml:"goroutines"`
 }
 
 // Url type represents a URL object
-type Url struct {
+type URL struct {
 	URL              string
 	ExpectStatusCode int
 }
@@ -51,7 +51,7 @@ func (conf *Config) GetConfig(configPath string) {
 
 func (conf *Config) Defaults() {
 	conf.GoroutinesCount = 3
-	conf.Urls = []Url{
+	conf.Urls = []URL{
 		{URL: "https://www.google.com", ExpectStatusCode: 200},
 		{URL: "https://www.facebook.com", ExpectStatusCode: 200},
 		{URL: "https://www.youtube.com", ExpectStatusCode: 200},

@@ -37,7 +37,7 @@ func NewShellCommand() *cobra.Command {
 					WG:                 wg,
 				})
 			}
-			go checker.ShellSiteStatusChecker(ctx, wg, wp.Results(), conf)
+			go checker.ShellSiteStatusChecker(ctx, wg, wp.Results())
 			wg.Wait()
 		},
 	}

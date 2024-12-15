@@ -14,10 +14,10 @@ var rootCmd = &cobra.Command{
 	Use:   "quic-checker",
 	Short: "A CLI tool to check QUIC support of a website",
 	Long:  ``,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		// log.InitCLILogger()
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		if err := cmd.Usage(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
