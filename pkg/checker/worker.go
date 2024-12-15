@@ -22,6 +22,7 @@ type QuicClient interface {
 	Get(url string) (statusCode int, err error)
 }
 
+// Worker type represents a worker object
 type Worker struct {
 	id      int
 	ctx     context.Context
@@ -30,8 +31,7 @@ type Worker struct {
 	client  QuicClient
 }
 
-// startWorker creates a new Worker
-// Move func as method and stipt to 2 parts: 1) create Worker 2) run Worker
+// NewWorker creates a new Worker
 func NewWorker(ctx context.Context, quicConf *quic.Config, queue chan *Task, results chan *SiteStatus) *Worker {
 	w := &Worker{
 		ctx:     ctx,

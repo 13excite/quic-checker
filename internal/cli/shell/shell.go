@@ -19,7 +19,7 @@ func NewShellCommand() *cobra.Command {
 	sehllCmd := &cobra.Command{
 		Use:   "shell",
 		Short: "run quic checker in shell mode",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			conf := &config.Config{}
 			conf.Defaults()
 			conf.ExpectedStatusCode = 400
