@@ -26,7 +26,7 @@ func ShellSiteStatusChecker(ctx context.Context, wg *sync.WaitGroup, results <-c
 		select {
 		case result := <-results:
 			if result.Err != nil {
-				log.Print(colorRed, "HTTP/3 check error on url: ", result.URL, result.Err, colorReset)
+				log.Print(colorRed, "HTTP/3 check error on url: ", result.URL, " error: ", result.Err, colorReset)
 				wg.Done()
 				continue
 			}
