@@ -15,7 +15,6 @@ import (
 type Job struct {
 	config     *config.Config
 	quicConfig *quic.Config
-	wp         *checker.WorkerPool
 }
 
 func NewJob(config *config.Config) *Job {
