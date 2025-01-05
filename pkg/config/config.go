@@ -13,6 +13,8 @@ const DefultConfigPath = "/etc/quic-checker.yaml"
 
 // Config type represents a main configuration object
 type Config struct {
+	// Interval is a time interval for ticker in seconds
+	Interval        int   `yaml:"interval"`
 	Urls            []URL `yaml:"urls"`
 	GoroutinesCount int   `yaml:"goroutines"`
 }
